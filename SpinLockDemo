@@ -1,0 +1,49 @@
+package com.carrera.consumer.examples;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * @author yaping
+ * @date 2020/4/2
+ */
+public class SpinLockDemo {
+    public static void main(String[] args) {
+
+        AtomicReference<Thread> atomicReference = new AtomicReference();
+
+        new Thread(()->{
+            mylock(atomicReference);
+            try{
+                TimeUnit.SECONDS.sleep(5);
+            }catch (Exception e){e.printStackTrace();}
+
+            myUnlock(atomicReference);
+        },"A").start();
+
+
+        new Thread(()->{
+            mylock(atomicReference);
+            try{
+                TimeUnit.SECONDS.sleep(5);
+            }catch (Exception e){e.printStackTrace();}
+
+            myUnlock(atomicReference);
+        },"B").start();
+    }
+
+    public static void mylock(AtomicReference atomicReference){
+        Thread thread = Thread.currentThread();
+        System.out.println(Thread.currentThread().getName()+" come in mylock");
+        while(!atomicReference.compareAndSet(null, thread)){
+
+        }
+    }
+
+    public static void myUnlock(AtomicReference atomicReference){
+        Thread thread = Thread.currentThread();
+        System.out.println(Thread.currentThread().getName()+" come in myUnlock");
+
+        atomicReference.compareAndSet(thread, null);
+    }
+}
