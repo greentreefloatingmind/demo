@@ -1,0 +1,63 @@
+package com.carrera.consumer.examples;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * @author yaping
+ * @date 2020/4/2
+ */
+public class Test {
+    public static void main(String[] args) {
+        AtomicReference atomicReference = new AtomicReference();
+
+
+    }
+
+    public static void testLock(){
+        Lock lock = new ReentrantLock();
+    }
+
+
+    public static void mapUnsafe(){
+        Map<String, String> map = new ConcurrentHashMap<>();
+        //Map<String, String> map = new HashMap<>(); throw ConcurrentModificationException
+
+        for(int i = 0;i<30;i++){
+            new Thread(()->{
+                map.put(Thread.currentThread().getName(), UUID.randomUUID().toString());
+                System.out.println(map);
+            }, String.valueOf(i)).start();
+        }
+    }
+
+    public static void listUnsafe(){
+        List list = new CopyOnWriteArrayList();
+        //List list = new ArrayList(); throw ConcurrentModificationException
+
+        for(int i = 0;i<30;i++){
+            new Thread(()->{
+                list.add(UUID.randomUUID().toString());
+                System.out.println(list);
+            }, String.valueOf(i)).start();
+        }
+    }
+
+    public static void setUnsafe(){
+        Set set = new CopyOnWriteArraySet();
+        //Set set = new HashSet();  throw ConcurrentModificationException
+
+        for(int i =0;i<30;i++){
+            new Thread(()->{
+                set.add(UUID.randomUUID().toString().substring(8));
+                System.out.println(set);
+            }, String.valueOf(i)).start();
+        }
+
+    }
+}
