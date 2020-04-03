@@ -1,0 +1,41 @@
+package com.carrera.consumer.examples;
+
+import java.util.concurrent.*;
+
+/**
+ * @author yaping
+ * @date 2020/4/3
+ *
+ *
+ * 问题：获得／使用java多线程的方法
+ *
+ * 1. extends Thread
+ * 2.implements Runnable
+ * 3. implements Callable
+ * 4. 通过线程池
+ *
+ *
+ */
+public class MyThreadPoolDemo {
+
+    public static void main(String[] args) {
+
+        ExecutorService threadPool = new ThreadPoolExecutor(
+                2,
+                5,
+                1,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(3),
+                Executors.defaultThreadFactory(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+
+
+        for (int i = 0; i < 16; i++) {
+            threadPool.execute(()->{
+                System.out.println(Thread.currentThread().getName()+"\t 处理任务");
+            });
+        }
+
+    }
+
+}
