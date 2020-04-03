@@ -1,0 +1,84 @@
+package com.carrera.consumer.examples;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * @author yaping
+ * @date 2020/4/3
+ *
+ *
+ * volatile/CAS/blockingqueue/线程交互/AtomiciInteger
+ */
+class MyResource{
+
+    private static BlockingQueue blockingQueue = null;
+
+    private static volatile boolean flag = Boolean.TRUE;
+
+    private static AtomicInteger atomic = new AtomicInteger();
+
+    public MyResource(BlockingQueue blockingQueue){
+        this.blockingQueue = blockingQueue;
+        System.out.println(blockingQueue.getClass().getName());
+    }
+
+    //生产消息
+    public static void prod(){
+
+        while(flag){
+            atomic.incrementAndGet();
+            if(blockingQueue.offer(atomic)){
+                System.out.println(Thread.currentThread().getName()+"\t is produce cookies:"+atomic.get());
+            }
+        }
+
+        System.out.println(Thread.currentThread().getName()+"\t is stopped");
+    }
+
+    //消费消息
+    public static void consume(){
+        Object result = null;
+        while(flag){
+            try{
+                result = blockingQueue.poll(2l, TimeUnit.SECONDS);
+                atomic.decrementAndGet();
+                if(result == null){
+                    System.out.println(Thread.currentThread().getName()+"\t stop consuming");
+                    return;
+                }
+                System.out.println(Thread.currentThread().getName()+"\t is consuming cookie:"+atomic.get());
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public static void stop(){
+        flag = Boolean.FALSE;
+    }
+
+}
+
+public class ProdConsumer_BlockingQueueDemo {
+
+    public static void main(String[] args) {
+
+        MyResource myResource = new MyResource(new ArrayBlockingQueue(10));
+        new Thread(()->{
+            MyResource.prod();
+        },"A").start();
+
+        new Thread(()->{
+            MyResource.consume();
+        },"B").start();
+
+        try{TimeUnit.SECONDS.sleep(1);}catch (Exception e){e.printStackTrace();}
+
+        MyResource.stop();
+
+    }
+}
