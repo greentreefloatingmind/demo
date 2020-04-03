@@ -1,0 +1,66 @@
+package com.carrera.consumer.examples;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * @author yaping
+ * @date 2020/4/3
+ *
+ * 读-读可共存
+ * 读-写不可共存
+ * 写-写不可共存
+ */
+public class ReadWriteLockDemo {
+
+    private static volatile Map map = new HashMap();
+    private  static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    public static void main(String[] args) {
+        put();
+        get();
+    }
+
+    public static void put(){
+
+        lock.writeLock().lock();
+        try {
+            for (int i = 0; i < 5; i++) {
+                final int intVal = i;
+                new Thread(() -> {
+                    System.out.println(Thread.currentThread().getName() + " is writing.");
+                    map.put(intVal, intVal);
+                    System.out.println(Thread.currentThread().getName() + " done write." + intVal);
+
+                }, String.valueOf(i)).start();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public static void get(){
+        lock.readLock().lock();
+        try{
+          for(int i = 0; i < 5; i++){
+             final int intVal = i;
+             new Thread(()->{
+                System.out.println(Thread.currentThread().getName()+" is reading.");
+                 try{TimeUnit.SECONDS.sleep(1);}catch (Exception e){e.printStackTrace();}
+                System.out.println(Thread.currentThread().getName()+" done read "+ map.get(intVal));
+              }, String.valueOf(i)).start();
+          }
+         }catch (Exception e){
+            e.printStackTrace();
+         }finally {
+            lock.readLock().unlock();
+        }
+
+
+    }
+}
